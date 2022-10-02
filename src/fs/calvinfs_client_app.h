@@ -757,6 +757,59 @@ void LatencyExperimentAppend() {
     Report();
   }
 
+  void ycsb_a() {
+    // Create M * 1k top-level files.
+    for (int i = 0; i < 100; i++) {
+      BackgroundCreateFile(
+        "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
+    }
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+
+    // 1k appends to random files.
+    Spin(1);
+    machine()->GlobalBarrier();
+    Spin(1);
+    reporting_ = true;
+    double start = GetTime();
+    int iterations = 5;
+    for (int a = 0; a < iterations; a++) {
+      for (int i = 0; i < 1000; i++) {
+        // Append.
+        BackgroundAppendStringToFile(
+            RandomData(RandomBlockSize()),
+            "/f" + IntToString(rand() % 100));
+      }
+      LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                 << "WriteExperiment progress: " << a+1 << "/" << iterations;
+    }
+
+    for (int a = 0; a < iterations; a++) {
+      for (int i = 0; i < 1000; i++) {
+      BackgroundReadFile(RandomFile());
+
+        if (i % 10 == 0) {
+          LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                    << "LE test progress: " << i / 10 << "/" << 100;
+        }
+     }
+      LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
+    }
+    
+
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+    // Report.
+    LOG(ERROR) << "[" << machine()->machine_id() << "] "
+               << iterations << "ycsb-a completed. Elapsed time: "
+               << (GetTime() - start) << " seconds";
+    Report();
+  }
 
   void Report() {
     string report;
