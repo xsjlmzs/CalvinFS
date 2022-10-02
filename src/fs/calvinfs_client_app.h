@@ -105,6 +105,9 @@ class CalvinFSClientApp : public App {
       case 10:
         CrashExperiment();
         break;
+      case 11:
+        ycsb_a();
+        break;
 
     }
 
