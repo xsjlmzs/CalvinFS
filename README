@@ -23,7 +23,7 @@ Installation(This is for Ubuntu 14.04, it should be similar with other Linux dis
 
 
 3. After that, you should add the LD_LIBRARY_PATH to the ~/.bashrc, below is my cofig:
-export LD_LIBRARY_PATH=~/CalvinFS/ext/zeromq/src/.libs:~/CalvinFS/ext/protobuf/src/.libs:~/CalvinFS/ext/gtest/mybuild:~/CalvinFS/ext/glog/.libs:~/CalvinFS/ext/leveldb:~/CalvinFS/ext    /gperftools/.libs:~/CalvinFS/ext/gflags/.libs
+export LD_LIBRARY_PATH=~/CalvinFS/ext/zeromq/src/.libs:~/CalvinFS/ext/protobuf/src/.libs:~/CalvinFS/ext/gtest/mybuild:~/CalvinFS/ext/glog/.libs:~/CalvinFS/ext/leveldb:~/CalvinFS/ext/gperftools/.libs:~/CalvinFS/ext/gflags/.libs
 
 
 Then run source ~/.bashrc.
@@ -63,5 +63,5 @@ Currently:
 7-----------LatencyExperimentAppend()
 8-----------LatencyExperimentMix()
 9-----------LatencyExperimentRenameFile()
-10-----------CrashExperiment()
+10----------CrashExperiment()
 

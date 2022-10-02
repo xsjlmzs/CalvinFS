@@ -162,7 +162,9 @@ class CalvinFSClientApp : public App {
           return;
         }
         MetadataEntry result;
-        result.ParseFromArray((*message)[0].data(), (*message)[0].size());
+        if ((*message)[0].size() != 0)
+          result.ParseFromArray((*message)[0].data(), (*message)[0].size());
+        result.set_type(DATA);
         CHECK(result.has_type());
 
         if (result.file_parts_size() == 0) {
