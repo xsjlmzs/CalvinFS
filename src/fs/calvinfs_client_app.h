@@ -842,7 +842,7 @@ void LatencyExperimentAppend() {
             "/f" + IntToString(rand() % 100));
       }
       LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "WriteExperiment progress: " << a+1 << "/" << iterations;
+                 << "WriteExperiment progress: " << a+1 << "/" << iterations_write;
     }
 
     for (int a = 0; a < iterations_read; a++) {
@@ -851,7 +851,7 @@ void LatencyExperimentAppend() {
         BackgroundReadFile(RandomFile());
      }
       LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
+                 << "ReadExperiment progress: " << a+1 << "/" << iterations_read;
     }
 
     // Wait for all operations to finish.
