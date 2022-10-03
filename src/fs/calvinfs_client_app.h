@@ -108,7 +108,12 @@ class CalvinFSClientApp : public App {
       case 11:
         ycsb_a();
         break;
-
+      case 12:
+        ycsb_b();
+        break;
+      case 13:
+        ycsb_c();
+        break;
     }
 
   }
@@ -777,9 +782,9 @@ void LatencyExperimentAppend() {
     Spin(1);
     reporting_ = true;
     double start = GetTime();
-    int iterations = 5;
+    int iterations = 50;
     for (int a = 0; a < iterations; a++) {
-      for (int i = 0; i < 1000; i++) {
+      for (int i = 0; i < 100; i++) {
         // Append.
         BackgroundAppendStringToFile(
             RandomData(RandomBlockSize()),
@@ -790,13 +795,9 @@ void LatencyExperimentAppend() {
     }
 
     for (int a = 0; a < iterations; a++) {
-      for (int i = 0; i < 1000; i++) {
-      BackgroundReadFile(RandomFile());
-
-        if (i % 10 == 0) {
-          LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                    << "LE test progress: " << i / 10 << "/" << 100;
-        }
+      for (int i = 0; i < 100; i++) {
+        // Read
+        BackgroundReadFile(RandomFile());
      }
       LOG(ERROR) << "[" << machine()->machine_id() << "] "
                  << "ReadExperiment progress: " << a+1 << "/" << iterations;
@@ -810,6 +811,94 @@ void LatencyExperimentAppend() {
     // Report.
     LOG(ERROR) << "[" << machine()->machine_id() << "] "
                << iterations << "ycsb-a completed. Elapsed time: "
+               << (GetTime() - start) << " seconds";
+    Report();
+  }
+
+  void ycsb_b() {
+    // Create M * 1k top-level files.
+    for (int i = 0; i < 100; i++) {
+      BackgroundCreateFile(
+        "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
+    }
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+
+    // 1k appends to random files.
+    Spin(1);
+    machine()->GlobalBarrier();
+    Spin(1);
+    reporting_ = true;
+    double start = GetTime();
+    int iterations_read = 95;
+    int iterations_write = 5;
+    for (int a = 0; a < iterations_write; a++) {
+      for (int i = 0; i < 100; i++) {
+        // Append.
+        BackgroundAppendStringToFile(
+            RandomData(RandomBlockSize()),
+            "/f" + IntToString(rand() % 100));
+      }
+      LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                 << "WriteExperiment progress: " << a+1 << "/" << iterations;
+    }
+
+    for (int a = 0; a < iterations_read; a++) {
+      for (int i = 0; i < 100; i++) {
+        // Read
+        BackgroundReadFile(RandomFile());
+     }
+      LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
+    }
+
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+    // Report.
+    LOG(ERROR) << "[" << machine()->machine_id() << "] "
+               << iterations << "ycsb-b completed. Elapsed time: "
+               << (GetTime() - start) << " seconds";
+    Report();
+  }
+
+  void ycsb_c() {
+    // Create M * 1k top-level files.
+    for (int i = 0; i < 100; i++) {
+      BackgroundCreateFile(
+        "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
+    }
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+
+    // 1k appends to random files.
+    Spin(1);
+    machine()->GlobalBarrier();
+    Spin(1);
+    reporting_ = true;
+    double start = GetTime();
+    int iterations = 100;
+    for (int a = 0; a < iterations; a++) {
+      for (int i = 0; i < 100; i++) {
+        // Read
+        BackgroundReadFile(RandomFile());
+     }
+      LOG(ERROR) << "[" << machine()->machine_id() << "] "
+                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
+    }
+    
+    // Wait for all operations to finish.
+    while (capacity_.load() < kMaxCapacity) {
+      usleep(10);
+    }
+    // Report.
+    LOG(ERROR) << "[" << machine()->machine_id() << "] "
+               << iterations << "ycsb-c completed. Elapsed time: "
                << (GetTime() - start) << " seconds";
     Report();
   }
