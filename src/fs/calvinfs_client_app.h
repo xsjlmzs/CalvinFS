@@ -106,14 +106,16 @@ class CalvinFSClientApp : public App {
         CrashExperiment();
         break;
       case 11:
-        ycsb_a();
+        ycsb_read_write_ratio(1,1);
         break;
       case 12:
-        ycsb_b();
+        ycsb_read_write_ratio(19,1);
         break;
       case 13:
-        ycsb_c();
+        ycsb_read_write_ratio(1,0);
         break;
+      case 14:
+        ycsb_read_write_ratio(4,1);
     }
 
   }
@@ -765,7 +767,7 @@ void LatencyExperimentAppend() {
     Report();
   }
 
-  void ycsb_a() {
+  void ycsb_read_write_ratio(int read_amount, int write_amount) {
     // Create M * 1k top-level files.
     for (int i = 0; i < 100; i++) {
       BackgroundCreateFile(
@@ -782,76 +784,25 @@ void LatencyExperimentAppend() {
     Spin(1);
     reporting_ = true;
     double start = GetTime();
-    int iterations = 50;
+    int total_txns_count = 100;
+    int iterations = total_txns_count/(read_amount + write_amount);
     for (int a = 0; a < iterations; a++) {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < write_amount; i++) {
         // Append.
         BackgroundAppendStringToFile(
             RandomData(RandomBlockSize()),
             "/f" + IntToString(rand() % 100));
       }
-      LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "WriteExperiment progress: " << a+1 << "/" << iterations;
-    }
-
-    for (int a = 0; a < iterations; a++) {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < read_amount; i++) {
         // Read
         BackgroundReadFile(RandomFile());
-     }
-      LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
-    }
-    
-
-    // Wait for all operations to finish.
-    while (capacity_.load() < kMaxCapacity) {
-      usleep(10);
-    }
-    // Report.
-    LOG(ERROR) << "[" << machine()->machine_id() << "] "
-               << iterations << "ycsb-a completed. Elapsed time: "
-               << (GetTime() - start) << " seconds";
-    Report();
-  }
-
-  void ycsb_b() {
-    // Create M * 1k top-level files.
-    for (int i = 0; i < 100; i++) {
-      BackgroundCreateFile(
-        "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
-    }
-    // Wait for all operations to finish.
-    while (capacity_.load() < kMaxCapacity) {
-      usleep(10);
-    }
-
-    // 1k appends to random files.
-    Spin(1);
-    machine()->GlobalBarrier();
-    Spin(1);
-    reporting_ = true;
-    double start = GetTime();
-    int iterations_read = 95;
-    int iterations_write = 5;
-    for (int a = 0; a < iterations_write; a++) {
-      for (int i = 0; i < 100; i++) {
-        // Append.
-        BackgroundAppendStringToFile(
-            RandomData(RandomBlockSize()),
-            "/f" + IntToString(rand() % 100));
       }
+      
       LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "WriteExperiment progress: " << a+1 << "/" << iterations_write;
-    }
-
-    for (int a = 0; a < iterations_read; a++) {
-      for (int i = 0; i < 100; i++) {
-        // Read
-        BackgroundReadFile(RandomFile());
-     }
-      LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "ReadExperiment progress: " << a+1 << "/" << iterations_read;
+                 << "YCSB " 
+                 << "WRITE = " << write_amount*iterations << " "
+                 << "READ = " << read_amount*iterations << " "
+                 << "Experiment progress: " << a+1 << "/" << iterations;
     }
 
     // Wait for all operations to finish.
@@ -860,45 +811,10 @@ void LatencyExperimentAppend() {
     }
     // Report.
     LOG(ERROR) << "[" << machine()->machine_id() << "] "
-               << iterations << "ycsb-b completed. Elapsed time: "
-               << (GetTime() - start) << " seconds";
-    Report();
-  }
-
-  void ycsb_c() {
-    // Create M * 1k top-level files.
-    for (int i = 0; i < 100; i++) {
-      BackgroundCreateFile(
-        "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
-    }
-    // Wait for all operations to finish.
-    while (capacity_.load() < kMaxCapacity) {
-      usleep(10);
-    }
-
-    // 1k appends to random files.
-    Spin(1);
-    machine()->GlobalBarrier();
-    Spin(1);
-    reporting_ = true;
-    double start = GetTime();
-    int iterations = 100;
-    for (int a = 0; a < iterations; a++) {
-      for (int i = 0; i < 100; i++) {
-        // Read
-        BackgroundReadFile(RandomFile());
-     }
-      LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "ReadExperiment progress: " << a+1 << "/" << iterations;
-    }
-    
-    // Wait for all operations to finish.
-    while (capacity_.load() < kMaxCapacity) {
-      usleep(10);
-    }
-    // Report.
-    LOG(ERROR) << "[" << machine()->machine_id() << "] "
-               << iterations << "ycsb-c completed. Elapsed time: "
+               << "YCSB " 
+               << "WRITE = " << write_amount*iterations << " "
+               << "READ = " << read_amount*iterations << " "
+               << "completed. Elapsed time: "
                << (GetTime() - start) << " seconds";
     Report();
   }
