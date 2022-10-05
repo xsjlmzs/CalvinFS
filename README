@@ -65,3 +65,6 @@ Currently:
 9-----------LatencyExperimentRenameFile()
 10----------CrashExperiment()
 11----------ycsb_a()
+12----------ycsb_b()
+13----------ycsb_c()
+14----------ycsb_mc()

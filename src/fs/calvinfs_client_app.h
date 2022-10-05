@@ -769,7 +769,8 @@ void LatencyExperimentAppend() {
 
   void ycsb_read_write_ratio(int read_amount, int write_amount) {
     // Create M * 1k top-level files.
-    for (int i = 0; i < 100000; i++) {
+    int files_amount = 1000;
+    for (int i = 0; i < files_amount; i++) {
       BackgroundCreateFile(
         "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
     }
@@ -784,18 +785,22 @@ void LatencyExperimentAppend() {
     Spin(1);
     reporting_ = true;
     double start = GetTime();
-    int total_txns_count = 100000;
+    int total_txns_count = 1000;
     int iterations = total_txns_count/(read_amount + write_amount);
+    auto RandomFile = [this](int size){
+    return "/a" + IntToString(rand() % machine()->config().size()) +
+           "/b" + IntToString(rand() % 1000) + "/c";
+    };
     for (int a = 0; a < iterations; a++) {
       for (int i = 0; i < write_amount; i++) {
         // Append.
         BackgroundAppendStringToFile(
             RandomData(RandomBlockSize()),
-            "/f" + IntToString(rand() % 100));
+            "/f" + IntToString(rand() % files_amount));
       }
       for (int i = 0; i < read_amount; i++) {
         // Read
-        BackgroundReadFile(RandomFile());
+        BackgroundReadFile(RandomFile(files_amount));
       }
       
       LOG(ERROR) << "[" << machine()->machine_id() << "] "
