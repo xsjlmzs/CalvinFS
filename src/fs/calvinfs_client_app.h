@@ -769,7 +769,7 @@ void LatencyExperimentAppend() {
 
   void ycsb_read_write_ratio(int read_amount, int write_amount) {
     // Create M * 1k top-level files.
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10000; i++) {
       BackgroundCreateFile(
         "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
     }
@@ -784,7 +784,7 @@ void LatencyExperimentAppend() {
     Spin(1);
     reporting_ = true;
     double start = GetTime();
-    int total_txns_count = 100;
+    int total_txns_count = 10000;
     int iterations = total_txns_count/(read_amount + write_amount);
     for (int a = 0; a < iterations; a++) {
       for (int i = 0; i < write_amount; i++) {
