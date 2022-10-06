@@ -787,10 +787,12 @@ void LatencyExperimentAppend() {
     double start = GetTime();
     int total_txns_count = 1000;
     int iterations = total_txns_count/(read_amount + write_amount);
+
     auto RandomFile = [this](int size){
     return "/a" + IntToString(rand() % machine()->config().size()) +
-           "/b" + IntToString(rand() % 1000) + "/c";
+           "/b" + IntToString(rand() % size) + "/c";
     };
+
     for (int a = 0; a < iterations; a++) {
       for (int i = 0; i < write_amount; i++) {
         // Append.
@@ -802,12 +804,6 @@ void LatencyExperimentAppend() {
         // Read
         BackgroundReadFile(RandomFile(files_amount));
       }
-      
-      LOG(ERROR) << "[" << machine()->machine_id() << "] "
-                 << "YCSB " 
-                 << "WRITE = " << write_amount*iterations << " "
-                 << "READ = " << read_amount*iterations << " "
-                 << "Experiment progress: " << a+1 << "/" << iterations;
     }
 
     // Wait for all operations to finish.
@@ -817,6 +813,7 @@ void LatencyExperimentAppend() {
     // Report.
     LOG(ERROR) << "[" << machine()->machine_id() << "] "
                << "YCSB " 
+               << "FILE AMOUNT = " << files_amount << " "
                << "WRITE = " << write_amount*iterations << " "
                << "READ = " << read_amount*iterations << " "
                << "completed. Elapsed time: "
