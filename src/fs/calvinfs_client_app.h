@@ -116,8 +116,10 @@ class CalvinFSClientApp : public App {
         break;
       case 14:
         ycsb_read_write_ratio(4,1);
+        break;
       case 15:
         ycsb_read_write_ratio(9,1);
+        break;
     }
 
   }
