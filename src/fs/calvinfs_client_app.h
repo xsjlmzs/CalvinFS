@@ -116,6 +116,8 @@ class CalvinFSClientApp : public App {
         break;
       case 14:
         ycsb_read_write_ratio(4,1);
+      case 15:
+        ycsb_read_write_ratio(9,1);
     }
 
   }
@@ -769,7 +771,7 @@ void LatencyExperimentAppend() {
 
   void ycsb_read_write_ratio(int read_amount, int write_amount) {
     // Create M * 1k top-level files.
-    int files_amount = 1000;
+    int files_amount = 5000;
     for (int i = 0; i < files_amount; i++) {
       BackgroundCreateFile(
         "/f" + UInt64ToString(machine()->machine_id()) + "." + IntToString(i));
@@ -785,7 +787,7 @@ void LatencyExperimentAppend() {
     Spin(1);
     reporting_ = true;
     double start = GetTime();
-    int total_txns_count = 1000;
+    int total_txns_count = 10000;
     int iterations = total_txns_count/(read_amount + write_amount);
 
     auto RandomFile = [this](int size){
